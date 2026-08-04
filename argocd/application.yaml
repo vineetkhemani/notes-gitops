@@ -14,7 +14,7 @@ spec:
 
   source:
     # ▼▼▼ CHANGE THIS to YOUR notes-gitops repo ▼▼▼
-    repoURL: https://github.com/YOUR-GITHUB-USERNAME/notes-gitops.git
+    repoURL: https://github.com/vineetkhemani/notes-gitops.git
     targetRevision: main       # which branch is the source of truth
     path: apps/notes-api       # which folder to apply
 
