@@ -1,0 +1,13 @@
+# The Service. Argo CD syncs every file in this folder, so this becomes an
+# object in the cluster too — you never apply it by hand.
+apiVersion: v1
+kind: Service
+metadata:
+  name: notes-api
+spec:
+  type: ClusterIP
+  selector:
+    app: notes-api
+  ports:
+  - port: 80
+    targetPort: 8080

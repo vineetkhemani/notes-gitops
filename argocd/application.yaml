@@ -1,0 +1,40 @@
+# The Application — Argo CD's "subscription form". Apply this ONCE, by hand, to
+# tell Argo CD what to watch. After this you never run kubectl to deploy again.
+#
+# Read it as one sentence:
+#   "Keep the apps/notes-api folder of my notes-gitops repo, on branch main,
+#    running in the notes-api namespace of this cluster."
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: notes-api
+  namespace: argocd            # the Application object lives in Argo CD's namespace
+spec:
+  project: default
+
+  source:
+    # ▼▼▼ CHANGE THIS to YOUR notes-gitops repo ▼▼▼
+    repoURL: https://github.com/YOUR-GITHUB-USERNAME/notes-gitops.git
+    targetRevision: main       # which branch is the source of truth
+    path: apps/notes-api       # which folder to apply
+
+  destination:
+    server: https://kubernetes.default.svc   # this cluster (the one Argo CD runs in)
+    namespace: notes-api                     # where the objects land
+
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true      # make the namespace if it doesn't exist
+
+    # Automation is deliberately OFF here. Apply this as-is and Argo CD will report
+    # OutOfSync and change NOTHING — it compares, reports, and waits for permission.
+    # That is the point: you press Sync ONCE by hand so the word means something.
+    #
+    # Then turn automation on and watch it enforce Git from then on:
+    #
+    #   kubectl -n argocd patch application notes-api --type merge \
+    #     -p '{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
+    #
+    #   automated  = when Git changes, sync it (no button)
+    #   prune      = a file deleted from Git deletes the object from the cluster
+    #   selfHeal   = a manual kubectl change is reverted back to what Git says

@@ -1,0 +1,40 @@
+# ┌──────────────────────────────────────────────────────────────────────────┐
+# │ THIS REPO IS WHAT RUNS IN THE CLUSTER.                                   │
+# │ Argo CD watches this folder and keeps the cluster matching it.           │
+# │ Nobody deploys with kubectl — the cluster follows this file.             │
+# └──────────────────────────────────────────────────────────────────────────┘
+#
+# The `image:` line below is written by CI. Every push to main in the
+# notes-application repo builds a new image and rewrites this one line with the
+# new commit SHA — and that commit is the deploy.
+#
+# It starts on the course's public image so your very FIRST sync works before you
+# have built anything. After your first push to notes-application, CI replaces it
+# with ghcr.io/<you>/notes-api:<sha> and maintains it from then on.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notes-api
+  labels:
+    app: notes-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notes-api
+  template:
+    metadata:
+      labels:
+        app: notes-api
+    spec:
+      containers:
+      - name: web
+        image: ghcr.io/sohamkaralkar/notes-application:f2df16a40e3b15c2f008e6f181405267fc4769b1
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet: { path: /ready, port: 8080 }
+          periodSeconds: 3
+        livenessProbe:
+          httpGet: { path: /healthz, port: 8080 }
+          periodSeconds: 10
